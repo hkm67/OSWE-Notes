@@ -92,8 +92,8 @@ if __name__ == "__main__":
     print("sqli_parallel.py — copy extract_string_blind() into your exploit script.")
     print()
 
-    # Mock secret: 12-char mix of upper/lower/digits/punctuation.
-    SECRET  = "aB3$xK9!mP2#"
+    # Mock secret: 8-char mix of upper/lower/digits/punctuation.
+    SECRET  = "aB3$xK9!"
     CHARSET = string.ascii_letters + string.digits + string.punctuation
 
     def demo_check(index: int, char: str) -> bool:
@@ -101,32 +101,40 @@ if __name__ == "__main__":
         # and a correct char triggers the server-side sleep (the signal).
         # index is 1-based (position 1 = first char), matching SQL's substr().
         correct = (char == SECRET[index - 1])
-        time.sleep(0.3 if correct else 0.05)
+        time.sleep(0.1 if correct else 0.05)
         return correct
 
     print(f"Extracting a {len(SECRET)}-char token from a mock time-based blind SQLi:")
     print()
 
-    # Without the helper: sequential, one request at a time, stop at first hit.
+# ==============================================================================
+# Without the helper: sequential, one request at a time, stop at first hit.
+# ==============================================================================
     t0 = time.time()
     chars = []
     for index in range(1, len(SECRET) + 1):
         for char in CHARSET:
+            # show the brute force in action: confirmed prefix + the char being tried
+            print(f"\r  [*] Extracting without helper: {''.join(chars)}{char}", end="", flush=True)
             if demo_check(index, char):
                 chars.append(char)
-                print(f"\r  [+] Extracting without helper: {''.join(chars)}", end="", flush=True)
                 break
-    print()
     seq_result = "".join(chars)
+    print(f"\r  [+] Extracting without helper: {seq_result} ", flush=True)
     seq_time   = time.time() - t0
-    print(f"  [-] Without helper (sequential): {seq_time:5.1f}s  ->  {seq_result}")
+    print(f"  [-] Without helper (sequential, one request at a time, stop at first hit): {seq_time:5.1f}s  ->  {seq_result}")
 
-    # With the helper: every (index, char) request fired across the thread pool.
+# ==============================================================================
+# With the helper: every (index, char) request fired across the thread pool.
+# ==============================================================================
     t0 = time.time()
     par_result = extract_string_blind(demo_check, length=len(SECRET), charset=CHARSET, label="with helper")
     par_time   = time.time() - t0
-    print(f"  [+] With helper (parallel):      {par_time:5.1f}s  ->  {par_result}")
+    print(f"  [+] With helper (parallel request fired across the thread pool): {par_time:5.1f}s  ->  {par_result}")
 
+# ==============================================================================
+# RESULTS
+# ==============================================================================
     print()
     assert seq_result == par_result == SECRET, "Demo failed"
     print(f"  [+] Both correct - the helper was ~{seq_time / par_time:.0f}x faster.")
