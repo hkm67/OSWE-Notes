@@ -91,14 +91,16 @@ def extract_string_blind(
 if __name__ == "__main__":
     print("sqli_parallel.py — import and call extract_string_blind() from your exploit.")
     print()
-    # Mock secret: 32-char mixed-case alphanumeric, like a real session token.
-    SECRET = "aB3xZ9kQ7mN2pR5tV8wY1cF4gH6jL0sD"
+    # Mock secret: 64-char mixed-case alphanumeric, like a real session token.
+    SECRET = "aB3xZ9kQ7mN2pR5tV8wY1cF4gH6jL0sDeT2uI4oP6aS8dF0gH1jK3lM5nB7vC9xW"
     print(f"Quick test - extracting a {len(SECRET)}-char token from a mock check:")
 
     def demo_check(index: int, char: str) -> bool:
         # Mock a time-based blind SQLi: every request carries network latency,
         # and a correct char triggers the server-side sleep (the signal).
-        correct = index <= len(SECRET) and SECRET[index - 1] == char
+        # index is 1-based (position 1 = first char), matching SQL's substr().
+        expected_char = SECRET[index - 1]
+        correct = (char == expected_char)
         time.sleep(0.25 if correct else 0.03)
         return correct
 
