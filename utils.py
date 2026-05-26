@@ -25,7 +25,7 @@ BURP_PROXIES = {
 }
 
 # ==============================================================================
-# CONSOLE HELPERS
+# CONSOLE HELPERS (copy into your main script if not already there)
 # ==============================================================================
 
 _ANSI = re.compile(r'\x1b\[[0-9;]*m')
@@ -48,7 +48,7 @@ def print_stage(n: int, description: str) -> None:
     print("-" * 50)
 
 # ==============================================================================
-# RANDOM GENERATORS
+# RANDOM GENERATORS (copy generate_password / generate_random_name into your main script)
 # ==============================================================================
 
 def generate_password(length: int = 16) -> str:
@@ -74,7 +74,7 @@ def generate_random_name(length: int = 10) -> str:
     return "".join(random.sample(string.ascii_uppercase, length))
 
 # ==============================================================================
-# REGEX EXTRACTION
+# REGEX EXTRACTION (copy the extract_* helpers into your main script)
 # ==============================================================================
 
 def extract_between_markers(response_text: str, start: str, end: str) -> str | None:
@@ -94,7 +94,7 @@ def extract_all_between_markers(response_text: str, start: str, end: str) -> lis
     return re.findall(pattern, response_text, re.DOTALL)
 
 # ==============================================================================
-# POWERSHELL ENCODING
+# POWERSHELL ENCODING (copy encode_ps1 into your main script)
 # ==============================================================================
 
 def encode_ps1(payload: str) -> str:

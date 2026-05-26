@@ -28,7 +28,7 @@ def _info(msg): print(f"  [*] {msg}")
 def _err(msg):  print(f"  [-] {msg}")
 
 # ==============================================================================
-# LISTENER
+# LISTENER (copy start_listener into your main script)
 # ==============================================================================
 
 def start_listener(lhost: str, lport: int) -> None:

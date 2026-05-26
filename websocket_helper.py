@@ -25,6 +25,10 @@ import re
 
 import websocket
 
+# ==============================================================================
+# WS RESPONSE DRAINER (copy this section into your main script)
+# ==============================================================================
+
 RECV_TIMEOUT = 0.75  # seconds — increase if large outputs are being truncated
 
 _ANSI = re.compile(r'\x1b\[[0-9;]*m')

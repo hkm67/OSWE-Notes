@@ -35,7 +35,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 # ==============================================================================
-# SHARED STATE (module-level — accessible from exploit script after import)
+# SHARED STATE (copy this, the REQUEST HANDLER, and START SERVER into your main script)
 # ==============================================================================
 
 # {url_path: (content, content_type)} — files served to the victim browser
