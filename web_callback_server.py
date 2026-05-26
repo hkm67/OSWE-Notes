@@ -8,8 +8,7 @@ Responsibilities:
   POST    → Parse JSON or form-encoded body; store in EXFIL_DATA[path]
   OPTIONS → CORS preflight — required when victim JS uses fetch() with non-simple headers
 
-Usage (as module):
-    from web_callback_server import start_server, SERVED_FILES, EXFIL_DATA
+Usage (copy start_server, SERVED_FILES, EXFIL_DATA into your exploit script):
 
     # Register a file to serve
     SERVED_FILES["/evil.dtd"] = (dtd_payload, "application/xml-dtd")

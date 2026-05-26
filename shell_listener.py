@@ -5,8 +5,7 @@ TCP reverse shell listener with separate send and receive threads.
 Usage (standalone):
     python3 shell_listener.py <lhost> <lport>
 
-Usage (as module):
-    from shell_listener import start_listener
+Usage (copy start_listener into your exploit script):
     import threading
 
     listener_t = threading.Thread(target=start_listener, args=(lhost, lport), daemon=True)

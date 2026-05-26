@@ -9,8 +9,7 @@ at each position.
 This is significantly faster than sequential testing — a 64-char string against a
 62-char charset (a-zA-Z0-9) fires 3968 tasks total, but only max_workers run at once.
 
-Usage:
-    from sqli_parallel import extract_string_blind
+Usage (copy extract_string_blind into your exploit script):
     import requests, time
 
     session = requests.Session()

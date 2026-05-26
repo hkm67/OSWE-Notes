@@ -4,9 +4,8 @@ WebSocket helper for targets that expose a command interface over WSS/WS.
 
 Requires: pip install websocket-client
 
-Usage:
+Usage (copy ws_recv_all into your exploit script):
     import websocket, ssl
-    from websocket_helper import ws_recv_all
 
     ws = websocket.create_connection(
         "wss://target/ws_endpoint",

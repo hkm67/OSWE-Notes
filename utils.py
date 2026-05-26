@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Common utilities shared across all OSWE exploit scripts.
-Import with: from utils import *
+Copy the helpers you need into your exploit script.
 """
 
 import random
