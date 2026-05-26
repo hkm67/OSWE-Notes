@@ -29,6 +29,7 @@ Usage (copy extract_string_blind into your exploit script):
 import concurrent.futures
 import string
 import sys
+import time
 
 # ==============================================================================
 # PARALLEL BLIND EXTRACTOR
@@ -95,9 +96,15 @@ if __name__ == "__main__":
     print(f"Quick test - extracting a {len(SECRET)}-char token from a mock check:")
 
     def demo_check(index: int, char: str) -> bool:
-        return index <= len(SECRET) and SECRET[index - 1] == char
+        # Mock a time-based blind SQLi: every request carries network latency,
+        # and a correct char triggers the server-side sleep (the signal).
+        correct = index <= len(SECRET) and SECRET[index - 1] == char
+        time.sleep(0.25 if correct else 0.03)
+        return correct
 
+    t0 = time.time()
     result = extract_string_blind(demo_check, length=len(SECRET), label="demo")
-    print(f"  [+] Result: {result}")
+    elapsed = time.time() - t0
+    print(f"  [+] Result: {result}  (extracted in {elapsed:.1f}s)")
     assert result == SECRET, "Demo failed"
     print("  [+] Demo passed.")
