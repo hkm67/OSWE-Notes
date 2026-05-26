@@ -90,9 +90,9 @@ def extract_string_blind(
 if __name__ == "__main__":
     print("sqli_parallel.py — import and call extract_string_blind() from your exploit.")
     print()
-    print("Quick test (simulates extracting 'Hello' from a mock check):")
-
-    SECRET = "Hello"
+    # Mock secret: 32-char mixed-case alphanumeric, like a real session token.
+    SECRET = "aB3xZ9kQ7mN2pR5tV8wY1cF4gH6jL0sD"
+    print(f"Quick test - extracting a {len(SECRET)}-char token from a mock check:")
 
     def demo_check(index: int, char: str) -> bool:
         return index <= len(SECRET) and SECRET[index - 1] == char
