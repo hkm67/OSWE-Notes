@@ -114,7 +114,9 @@ if __name__ == "__main__":
         for char in CHARSET:
             if demo_check(index, char):
                 chars.append(char)
+                print(f"\r  [+] Extracting without helper: {''.join(chars)}", end="", flush=True)
                 break
+    print()
     seq_result = "".join(chars)
     seq_time   = time.time() - t0
     print(f"  [-] Without helper (sequential): {seq_time:5.1f}s  ->  {seq_result}")
